@@ -18,38 +18,32 @@ public class SequentialSort implements Sorter {
 
     private static int partition(int[] arr, int start, int end) {
 
-        // Positions for start and end
-        int l = start;
-        int h = end + 1;
+        // Select pivot
+        int pivot = arr[end];
 
-        // Get low value
-        int value = arr[start];
+        // Correct starting position
+        int k = (start - 1);
 
-        // Iterate to sort
-        while (true) {
+        for (int i = start; i <= end - 1; i++) {
 
-            while (arr[l++] < value)
-                if (l == end)
-                    break;
-            while (value < arr[h--])
-                if (h == start)
-                    break;
-            if (l >= h)
-                break;
-            exchange(arr, l, h);
+            if (arr[i] < pivot) {
+
+                k++;
+                exchange(arr, k, i);
+            }
         }
-        // Insert partition integer
-        exchange(arr, start, h);
-        return h;
+        exchange(arr, k + 1, end);
+        return (k + 1);
     }
 
     // Based on QuickSort chapter of Algortihms - Fourth Edition - Sedgewick & Wayne
     void quickSort(int[] arr, int start, int end) {
 
         if (start < end) {
-            int pivot = partition(arr, start, end);
-            quickSort(arr, start, pivot - 1);
-            quickSort(arr, pivot, end);
+
+            int pi = partition(arr, start, end);
+            quickSort(arr, start, pi - 1);
+            quickSort(arr, pi + 1, end);
         }
 
     }
