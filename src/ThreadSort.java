@@ -8,13 +8,14 @@ public class ThreadSort {
     private static class SorterThread extends Thread {
         SorterThread(int[] arr, int start, int end) {
             super(() -> {
-                ThreadSort.quickSort(arr, start, end);
+                ThreadSort sorter = new ThreadSort();
+                sorter.mergeSort(arr, start, end);
             });
             this.start();
         }
     }
 
-    public static void sort(int[] arr) {
+    public void sort(int[] arr) {
 
         // Decide in which index bracket each thread works on;
         boolean isFair = arr.length % NUM_THREADS == 0; // Check if division is fair
@@ -22,7 +23,7 @@ public class ThreadSort {
         maxLim = maxLim < NUM_THREADS ? NUM_THREADS : maxLim; // If only one thread needed, assign all to that thread
 
         // Keep thread record
-        final ArrayList<SorterThread> threads = new ArrayList();
+        ArrayList<SorterThread> threads = new ArrayList();
         for (int i = 0; i < arr.length; i += maxLim) {
             int beg = i;
             int remain = (arr.length) - i;
@@ -102,4 +103,5 @@ public class ThreadSort {
     public int getThreads() {
         return 0;
     }
+
 }
