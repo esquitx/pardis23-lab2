@@ -2,7 +2,6 @@ public class SequentialSort implements Sorter {
 
     // Implement QuickSort
     public void sort(int[] arr) {
-
         int n = arr.length;
         quickSort(arr, 0, n - 1);
 
