@@ -1,20 +1,23 @@
 
 import java.util.ArrayList;
 
-public class ThreadSort {
+public class ThreadSort implements Sorter {
+
+    Auxiliary aux = new Auxiliary();
 
     private static final int NUM_THREADS = 4;
 
     private static class SorterThread extends Thread {
         SorterThread(int[] arr, int start, int end) {
             super(() -> {
-                ThreadSort sorter = new ThreadSort();
+                SequentialSort sorter = new SequentialSort();
                 sorter.mergeSort(arr, start, end);
             });
             this.start();
         }
     }
 
+    @Override
     public void sort(int[] arr) {
 
         // Decide in which index bracket each thread works on;
@@ -47,59 +50,12 @@ public class ThreadSort {
             int remain = (arr.length - i);
             int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
 
-            merge(arr, 0, mid, end);
+            aux.merge(arr, 0, mid, end);
         }
 
     }
 
-    public static void merge(int[] arr, int start, int mid, int end) {
-        int[] temp = new int[(end - start) + 1];
-
-        // Initialize swapping indexes
-        int i = start;
-        int j = mid + 1;
-        int k = 0;
-
-        while (i <= mid && j <= end) {
-            if (arr[i] <= arr[j]) {
-                temp[k] = arr[i];
-                i += 1;
-            } else {
-                temp[k] = arr[j];
-                j += 1;
-            }
-            k += 1;
-        }
-
-        // Add remaining elements to temp array from first half that are left over
-        while (i <= mid) {
-            temp[k] = arr[i];
-            i += 1;
-            k += 1;
-        }
-
-        // Add remaining elements to temp array from second half that are left over
-        while (j <= end) {
-            temp[k] = arr[j];
-            j += 1;
-            k += 1;
-        }
-
-        for (i = start, k = 0; i <= end; i++, k++) {
-            arr[i] = temp[k];
-        }
-    }
-
-    // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int start, int end) {
-        if (start < end) {
-            int mid = (start + end) / 2;
-            mergeSort(arr, start, mid);
-            mergeSort(arr, mid + 1, end);
-            merge(arr, start, mid, end);
-        }
-    }
-
+    @Override
     public int getThreads() {
         return 0;
     }

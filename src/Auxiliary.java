@@ -15,6 +15,44 @@ class Auxiliary {
     void measure() {
     }
 
+    void merge(int[] arr, int start, int mid, int end) {
+        int[] temp = new int[(end - start) + 1];
+
+        // Initialize swapping indexes
+        int i = start;
+        int j = mid + 1;
+        int k = 0;
+
+        while (i <= mid && j <= end) {
+            if (arr[i] <= arr[j]) {
+                temp[k] = arr[i];
+                i += 1;
+            } else {
+                temp[k] = arr[j];
+                j += 1;
+            }
+            k += 1;
+        }
+
+        // Add remaining elements to temp array from first half that are left over
+        while (i <= mid) {
+            temp[k] = arr[i];
+            i += 1;
+            k += 1;
+        }
+
+        // Add remaining elements to temp array from second half that are left over
+        while (j <= end) {
+            temp[k] = arr[j];
+            j += 1;
+            k += 1;
+        }
+
+        for (i = start, k = 0; i <= end; i++, k++) {
+            arr[i] = temp[k];
+        }
+    }
+
     void threadChecker() {
 
         int n = random.nextInt(100) + 1;
