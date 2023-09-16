@@ -1,5 +1,11 @@
 
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ExecutorServiceSort implements Sorter {
 
@@ -29,19 +35,55 @@ public class ExecutorServiceSort implements Sorter {
 
         ExecutorService executor = Executors.newFixedThreadPool(MAX_THREADS);
 
+        // Sanity check - no need to sort this array :)
+        if (arr.length < 1) {
+            return;
+        }
         // Decide in which index bracket each thread works on;
         boolean isFair = arr.length % MAX_THREADS == 0; // Check if division is fair
         int maxLim = isFair ? arr.length / MAX_THREADS : arr.length / (MAX_THREADS - 1);
         maxLim = maxLim < MAX_THREADS ? MAX_THREADS : maxLim; // If only one thread needed, assign all to that thread
 
+        ArrayList<Future<?>> taskList = new ArrayList<Future<?>>();
         for (int i = 0; i < arr.length; i += maxLim) {
             int beg = i;
             int remain = (arr.length) - i;
             int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-            executor.submit(new SorterThread(arr, beg, end));
+            Future<?> task = executor.submit(new SorterThread(arr, beg, end));
+            taskList.add(task);
         }
 
+        // Wait for tasks to finish
+        for (Future<?> task : taskList) {
+            try {
+                task.get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Merge results x thread
+        for (int i = 0; i < arr.length; i += maxLim) {
+            int mid = i == 0 ? 0 : i - 1;
+            int remain = (arr.length - i);
+            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
+
+            merge(arr, 0, mid, end);
+        }
+
+        // SECURITY : shutdown executor
         executor.shutdown();
+        try {
+
+            if (!executor.awaitTermination(10_000, TimeUnit.MILLISECONDS)) {
+                System.out.println("Some tasks are still pending!");
+            }
+            ;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
