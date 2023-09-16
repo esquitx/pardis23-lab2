@@ -29,10 +29,20 @@ class Auxiliary {
         int[] test = Arrays.copyOf(arr, arr.length);
         Arrays.sort(test);
 
+        // Start test
+
+        System.out.println();
+        System.out.println("Start time : " + System.nanoTime());
+
         // Sort same array with sequential sort
         SequentialSort sorter = new SequentialSort();
         sorter.sort(arr);
 
+        System.out.println("End time: " + System.nanoTime());
+
+        printArray(arr);
+
+        System.out.println();
         if (Arrays.equals(test, arr))
             System.out.println("Test passed!");
         else
@@ -70,6 +80,8 @@ class Auxiliary {
 
         printArray(arr);
 
+        // Test message
+        System.out.println();
         if (Arrays.equals(test, arr))
             System.out.println("Test passed!");
         else
