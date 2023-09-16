@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class ThreadSort implements Sorter {
 
-    private final int NUM_THREADS = 4;
+    private final int MAX_THREADS = 4;
     private final int MIN_CHUNK = 16;
 
     private class SorterThread implements Runnable {
