@@ -122,6 +122,39 @@ class Auxiliary {
 
     }
 
+    void forkJoinChecker() {
+
+        int n = random.nextInt(100) + 1;
+
+        // Generate a random array;
+        int[] arr = new int[n];
+        // Populate it
+        for (int i = 0; i < n; i++) {
+            arr[i] = random.nextInt(100) + 1;
+        }
+        // Sort it
+        int[] test = Arrays.copyOf(arr, arr.length);
+        Arrays.sort(test);
+
+        // Start test
+
+        System.out.println();
+        System.out.println("Start time : " + System.nanoTime());
+
+        ForkJoinPoolSort sorter = new ForkJoinPoolSort();
+        sorter.sort(arr);
+
+        System.out.println("End time: " + System.nanoTime());
+
+        printArray(arr);
+
+        if (Arrays.equals(test, arr))
+            System.out.println("Test passed!");
+        else
+            System.out.println("Test failed :( ");
+
+    }
+
     public static void main(String[] args) {
 
         Auxiliary aux = new Auxiliary();
@@ -133,6 +166,9 @@ class Auxiliary {
         // aux.threadChecker();
 
         // ExecutorServiceSort
-        aux.executorChecker();
+        // aux.executorChecker();
+
+        // ForkJoinPoolSort
+        aux.forkJoinChecker();
     }
 }
