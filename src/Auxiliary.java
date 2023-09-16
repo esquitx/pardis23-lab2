@@ -94,17 +94,18 @@ public class Auxiliary {
             // Sort reference array
             Arrays.sort(test);
 
-            // Start test
-            System.out.println("Attempt - " + (i + 1));
-            System.out.println("-------------");
-            long startTime = System.nanoTime();
-            sorter.sort(arr);
-            long endTime = System.nanoTime();
+            // // Start test
+            // System.out.println("Attempt - " + (i + 1));
+            // System.out.println("-------------");
 
-            System.out.println("Start time : " + startTime);
-            System.out.println("End time: " + endTime);
-            System.out.println("Time taken: " + (endTime - startTime));
-            System.out.println();
+            // long startTime = System.nanoTime();
+            sorter.sort(arr);
+            // long endTime = System.nanoTime();
+
+            // System.out.println("Start time : " + startTime);
+            // System.out.println("End time: " + endTime);
+            // System.out.println("Time taken: " + (endTime - startTime));
+            // System.out.println();
 
             if (!Arrays.equals(test, arr))
                 return false;
