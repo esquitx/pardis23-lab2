@@ -5,6 +5,7 @@
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.LongStream;
 
 public class Auxiliary {
     /**
@@ -19,6 +20,29 @@ public class Auxiliary {
     }
 
     /**
+     * Returns mean and standard deviation from measurements
+     * 
+     * @param data
+     * @return
+     */
+    public static double[] getMeanAndStDev(long[] data) {
+
+        // Calculate mean
+        long sum = LongStream.of(data).sum();
+        double mean = sum / data.length;
+
+        // Calculate stdev (from variance)
+        double variance = 0.0;
+        for (long value : data) {
+            variance += Math.pow(value - mean, 2);
+        }
+        double stdev = Math.sqrt(variance / data.length);
+
+        double[] results = { mean, stdev };
+        return results;
+    }
+
+    /**
      * Measures the execution time of the 'sorter'.
      * 
      * @param sorter   Sorting algorithm
@@ -30,7 +54,20 @@ public class Auxiliary {
      */
     public static double[] measure(Sorter sorter, int n, int initSeed, int m) {
         double[] result = new double[2];
-        // TODO Measure the avg. execution time and std of sorter.
+        long[] measurements = new long[m];
+
+        int seed = 0;
+        seed = seed + initSeed;
+        for (int i = 0; i < m; i++) {
+            int[] arr = arrayGenerate(n, seed);
+            long startTime = System.nanoTime();
+            sorter.sort(arr);
+            long endTime = System.nanoTime();
+            measurements[i] = (endTime - startTime);
+        }
+
+        // Calculate data
+        result = getMeanAndStDev(measurements);
         return result;
     }
 
@@ -46,8 +83,8 @@ public class Auxiliary {
     public static boolean validate(Sorter sorter, int n, int initSeed, int m) {
 
         // Reference array
-        int seed = initSeed;
-
+        int seed = 0;
+        seed = seed + initSeed;
         for (int i = 0; i < m; i++) {
 
             // Generate array and reference copy
@@ -73,7 +110,7 @@ public class Auxiliary {
                 return false;
 
             // Change seed
-            seed = 2 * seed;
+            seed = seed + initSeed;
         }
 
         // If all tests successful, return true
