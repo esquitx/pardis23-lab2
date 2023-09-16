@@ -5,7 +5,7 @@ public class ThreadSort implements Sorter {
 
     private static final int NUM_THREADS = 4;
 
-    private static class SorterThread extends Thread {
+    private class SorterThread implements Runnable {
 
         int[] arr;
         final int fromIndex, toIndex;
@@ -19,9 +19,9 @@ public class ThreadSort implements Sorter {
         @Override
         public void run() {
             // Call meger sort in the required indexes
-            SequentialSort sorter = new SequentialSort();
-            sorter.mergeSort(arr, fromIndex, toIndex);
+            mergeSort(arr, fromIndex, toIndex);
         }
+
     }
 
     public void sort(int[] arr) {
@@ -32,12 +32,12 @@ public class ThreadSort implements Sorter {
         maxLim = maxLim < NUM_THREADS ? NUM_THREADS : maxLim; // If only one thread needed, assign all to that thread
 
         // Keep thread record
-        ArrayList<SorterThread> threads = new ArrayList<SorterThread>();
+        ArrayList<Thread> threads = new ArrayList<Thread>();
         for (int i = 0; i < arr.length; i += maxLim) {
             int beg = i;
             int remain = (arr.length) - i;
             int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-            final SorterThread t = new SorterThread(arr, beg, end);
+            final Thread t = new Thread(new SorterThread(arr, beg, end));
             // Add thread to thread register
             threads.add(t);
             // Start thread task

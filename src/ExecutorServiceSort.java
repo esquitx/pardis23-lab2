@@ -1,11 +1,11 @@
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
+
+import java.util.concurrent.*;
 
 public class ExecutorServiceSort implements Sorter {
 
     int MAX_THREADS = 4;
 
-    private static class SorterThread extends Thread {
+    private class SorterThread implements Runnable {
 
         int[] arr;
         final int fromIndex, toIndex;
@@ -18,16 +18,31 @@ public class ExecutorServiceSort implements Sorter {
 
         @Override
         public void run() {
-            // Call meger sort in the required indexes
-            SequentialSort sorter = new SequentialSort();
-            sorter.mergeSort(arr, fromIndex, toIndex);
+            // Call merge sort in the required indexes
+            mergeSort(arr, fromIndex, toIndex);
         }
+
     }
 
     @Override
     public void sort(int[] arr) {
 
-        ExecutorService executor = Executors.newCachedThreadPool(MAX_THREADS);
+        ExecutorService executor = Executors.newFixedThreadPool(MAX_THREADS);
+
+        // Decide in which index bracket each thread works on;
+        boolean isFair = arr.length % MAX_THREADS == 0; // Check if division is fair
+        int maxLim = isFair ? arr.length / MAX_THREADS : arr.length / (MAX_THREADS - 1);
+        maxLim = maxLim < MAX_THREADS ? MAX_THREADS : maxLim; // If only one thread needed, assign all to that thread
+
+        for (int i = 0; i < arr.length; i += maxLim) {
+            int beg = i;
+            int remain = (arr.length) - i;
+            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
+            executor.submit(new SorterThread(arr, beg, end));
+        }
+
+        executor.shutdown();
+
     }
 
     public static void merge(int[] arr, int start, int mid, int end) {
