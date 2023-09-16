@@ -3,8 +3,12 @@ import java.util.ArrayList;
 
 public class ThreadSort implements Sorter {
 
-    private final int MAX_THREADS = 4;
+    public final int threads;
     private final int MIN_CHUNK = 16;
+
+    public ThreadSort(int threads) {
+        this.threads = threads;
+    }
 
     private class SorterThread implements Runnable {
 
@@ -28,13 +32,13 @@ public class ThreadSort implements Sorter {
     public void sort(int[] arr) {
 
         // Decide in which index bracket each thread works on;
-        boolean isFair = arr.length % MAX_THREADS == 0; // Check if division is fair ( no unbalanced work load )
-        int maxLim = isFair ? arr.length / MAX_THREADS : arr.length / (MAX_THREADS - 1); // if fair,divide evenly. If
-                                                                                         // not, use one less thread and
-                                                                                         // leave "extra" for last
-                                                                                         // thread.
-        maxLim = maxLim < MAX_THREADS || maxLim < MIN_CHUNK ? MAX_THREADS : maxLim; // If only one thread needed,
-                                                                                    // assign all to that thread
+        boolean isFair = arr.length % threads == 0; // Check if division is fair ( no unbalanced work load )
+        int maxLim = isFair ? arr.length / threads : arr.length / (threads - 1); // if fair,divide evenly. If
+                                                                                 // not, use one less thread and
+                                                                                 // leave "extra" for last
+                                                                                 // thread.
+        maxLim = maxLim < threads || maxLim < MIN_CHUNK ? threads : maxLim; // If only one thread needed,
+                                                                            // assign all to that thread
 
         // Keep thread record
         ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -120,7 +124,7 @@ public class ThreadSort implements Sorter {
     }
 
     public int getThreads() {
-        return 0;
+        return threads;
     }
 
 }

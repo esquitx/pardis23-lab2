@@ -1,174 +1,83 @@
 
+/**
+ * Helper methods.
+ */
+
 import java.util.Arrays;
 import java.util.Random;
 
-class Auxiliary {
-
-    Random random = new Random();
-
-    public static void printArray(int[] array) {
-        for (int i : array) {
-            System.out.print(i + " ");
-        }
-    }
-
-    void measure() {
-    }
-
-    void sequentialChecker() {
-
-        int n = random.nextInt(100) + 1;
-
-        // Generate a random array;
+public class Auxiliary {
+    /**
+     * Generate a pseudo-random array of length `n`.
+     */
+    public static int[] arrayGenerate(int seed, int n) {
+        Random prng = new Random(seed);
         int[] arr = new int[n];
-        // Populate it
-        for (int i = 0; i < n; i++) {
-            arr[i] = random.nextInt(100) + 1;
+        for (int i = 0; i < n; ++i)
+            arr[i] = prng.nextInt();
+        return arr;
+    }
+
+    /**
+     * Measures the execution time of the 'sorter'.
+     * 
+     * @param sorter   Sorting algorithm
+     * @param n        Size of list to sort
+     * @param initSeed Initial seed used for array generation
+     * @param m        Measurment rounds.
+     * @return result[0]: average execution time
+     *         result[1]: standard deviation of execution time
+     */
+    public static double[] measure(Sorter sorter, int n, int initSeed, int m) {
+        double[] result = new double[2];
+        // TODO Measure the avg. execution time and std of sorter.
+        return result;
+    }
+
+    /**
+     * Checks that the 'sorter' sorts.
+     * 
+     * @param sorter   Sorting algorithm
+     * @param n        Size of list to sort
+     * @param initSeed Initial seed used for array generation
+     * @param m        Number of attempts.
+     * @return True if the sorter successfully sorted all generated arrays.
+     */
+    public static boolean validate(Sorter sorter, int n, int initSeed, int m) {
+
+        // Reference array
+        int seed = initSeed;
+
+        for (int i = 0; i < m; i++) {
+
+            // Generate array and reference copy
+            int[] arr = arrayGenerate(seed, n);
+            int[] test = Arrays.copyOf(arr, arr.length);
+
+            // Sort reference array
+            Arrays.sort(test);
+
+            // Start test
+            System.out.println("Attempt - " + i);
+            System.out.println("-------------");
+            long startTime = System.nanoTime();
+            sorter.sort(arr);
+            long endTime = System.nanoTime();
+
+            System.out.println("Start time : " + startTime);
+            System.out.println("End time: " + endTime);
+            System.out.println("Time taken: " + (endTime - startTime));
+
+            if (!Arrays.equals(test, arr))
+                return false;
+
+            // Change seed
+            seed = 2 * seed;
         }
-        // Sort it
-        int[] test = Arrays.copyOf(arr, arr.length);
-        Arrays.sort(test);
 
-        // Start test
-
-        System.out.println();
-        System.out.println("Start time : " + System.nanoTime());
-
-        // Sort same array with sequential sort
-        SequentialSort sorter = new SequentialSort();
-        sorter.sort(arr);
-
-        System.out.println("End time: " + System.nanoTime());
-
-        printArray(arr);
-
-        System.out.println();
-        if (Arrays.equals(test, arr))
-            System.out.println("Test passed!");
-        else
-            System.out.println("Test failed :( ");
+        // If all tests successful, return true
+        return true;
 
     }
 
-    void executorChecker(int[] arr) {
-
-    }
-
-    void threadChecker() {
-
-        int n = random.nextInt(100) + 1;
-
-        // Generate a random array;
-        int[] arr = new int[n];
-        // Populate it
-        for (int i = 0; i < n; i++) {
-            arr[i] = random.nextInt(100) + 1;
-        }
-        // Sort it
-        int[] test = Arrays.copyOf(arr, arr.length);
-        Arrays.sort(test);
-
-        // Start test
-
-        System.out.println();
-        System.out.println("Start time : " + System.nanoTime());
-
-        ThreadSort sorter = new ThreadSort();
-        sorter.sort(arr);
-
-        System.out.println("End time: " + System.nanoTime());
-
-        printArray(arr);
-
-        // Test message
-        System.out.println();
-        if (Arrays.equals(test, arr))
-            System.out.println("Test passed!");
-        else
-            System.out.println("Test failed :( ");
-
-    }
-
-    void executorChecker() {
-
-        int n = random.nextInt(100) + 1;
-
-        // Generate a random array;
-        int[] arr = new int[n];
-        // Populate it
-        for (int i = 0; i < n; i++) {
-            arr[i] = random.nextInt(100) + 1;
-        }
-        // Sort it
-        int[] test = Arrays.copyOf(arr, arr.length);
-        Arrays.sort(test);
-
-        // Start test
-
-        System.out.println();
-        System.out.println("Start time : " + System.nanoTime());
-
-        ExecutorServiceSort sorter = new ExecutorServiceSort();
-        sorter.sort(arr);
-
-        System.out.println("End time: " + System.nanoTime());
-
-        printArray(arr);
-
-        if (Arrays.equals(test, arr))
-            System.out.println("Test passed!");
-        else
-            System.out.println("Test failed :( ");
-
-    }
-
-    void forkJoinChecker() {
-
-        int n = random.nextInt(100) + 1;
-
-        // Generate a random array;
-        int[] arr = new int[n];
-        // Populate it
-        for (int i = 0; i < n; i++) {
-            arr[i] = random.nextInt(100) + 1;
-        }
-        // Sort it
-        int[] test = Arrays.copyOf(arr, arr.length);
-        Arrays.sort(test);
-
-        // Start test
-
-        System.out.println();
-        System.out.println("Start time : " + System.nanoTime());
-
-        ForkJoinPoolSort sorter = new ForkJoinPoolSort();
-        sorter.sort(arr);
-
-        System.out.println("End time: " + System.nanoTime());
-
-        printArray(arr);
-
-        if (Arrays.equals(test, arr))
-            System.out.println("Test passed!");
-        else
-            System.out.println("Test failed :( ");
-
-    }
-
-    public static void main(String[] args) {
-
-        Auxiliary aux = new Auxiliary();
-
-        // Sequential checker
-        // aux.sequentialChecker();
-
-        // ThreadSort checker
-        // aux.threadChecker();
-
-        // ExecutorServiceSort
-        // aux.executorChecker();
-
-        // ForkJoinPoolSort
-        aux.forkJoinChecker();
-    }
 }

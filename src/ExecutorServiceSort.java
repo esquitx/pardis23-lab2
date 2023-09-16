@@ -9,8 +9,12 @@ import java.util.concurrent.Executors;
 
 public class ExecutorServiceSort implements Sorter {
 
-    private final int MAX_THREADS = 4;
+    public final int threads;
     private final int MIN_CHUNK = 16;
+
+    public ExecutorServiceSort(int threads) {
+        this.threads = threads;
+    }
 
     private class SorterThread implements Runnable {
 
@@ -34,7 +38,7 @@ public class ExecutorServiceSort implements Sorter {
     @Override
     public void sort(int[] arr) {
 
-        ExecutorService executor = Executors.newFixedThreadPool(MAX_THREADS);
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
 
         // Sanity check - no need to sort this array :)
         if (arr.length < 1) {
@@ -42,13 +46,13 @@ public class ExecutorServiceSort implements Sorter {
         }
 
         // Decide in which index bracket each thread works on;
-        boolean isFair = arr.length % MAX_THREADS == 0; // Check if division is fair ( no unbalanced work load )
-        int maxLim = isFair ? arr.length / MAX_THREADS : arr.length / (MAX_THREADS - 1); // if fair,divide evenly. If
-                                                                                         // not, use one less thread and
-                                                                                         // leave "extra" for last
-                                                                                         // thread.
-        maxLim = maxLim < MAX_THREADS || maxLim < MIN_CHUNK ? MAX_THREADS : maxLim; // If only one thread needed,
-                                                                                    // assign all to that thread
+        boolean isFair = arr.length % threads == 0; // Check if division is fair ( no unbalanced work load )
+        int maxLim = isFair ? arr.length / threads : arr.length / (threads - 1); // if fair,divide evenly. If
+                                                                                 // not, use one less thread and
+                                                                                 // leave "extra" for last
+                                                                                 // thread.
+        maxLim = maxLim < threads || maxLim < MIN_CHUNK ? threads : maxLim; // If only one thread needed,
+                                                                            // assign all to that thread
 
         ArrayList<Future<?>> taskList = new ArrayList<Future<?>>();
         for (int i = 0; i < arr.length; i += maxLim) {
@@ -145,8 +149,7 @@ public class ExecutorServiceSort implements Sorter {
 
     @Override
     public int getThreads() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getThreads'");
+        return threads;
     }
 
 }
