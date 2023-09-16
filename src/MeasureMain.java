@@ -4,6 +4,8 @@ public class MeasureMain {
         switch (name) {
             case "Sequential":
                 return new SequentialSort();
+            case "ThreadSort":
+                return new ThreadSort(threads);
             case "ExecutorService":
                 return new ExecutorServiceSort(threads);
             case "ForkJoinPool":
