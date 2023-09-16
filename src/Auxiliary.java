@@ -58,7 +58,7 @@ public class Auxiliary {
             Arrays.sort(test);
 
             // Start test
-            System.out.println("Attempt - " + i);
+            System.out.println("Attempt - " + (i + 1));
             System.out.println("-------------");
             long startTime = System.nanoTime();
             sorter.sort(arr);
@@ -67,6 +67,7 @@ public class Auxiliary {
             System.out.println("Start time : " + startTime);
             System.out.println("End time: " + endTime);
             System.out.println("Time taken: " + (endTime - startTime));
+            System.out.println();
 
             if (!Arrays.equals(test, arr))
                 return false;
@@ -78,6 +79,27 @@ public class Auxiliary {
         // If all tests successful, return true
         return true;
 
+    }
+
+    public static void main(String[] args) {
+
+        // Test parameters
+        int numThreads = 8;
+        int arrLength = 1_000_000;
+        int initSeed = 69;
+        int numTests = 10;
+
+        // Testing
+
+        System.out.println("Starting tests...");
+        System.out.println("# threads : " + numThreads + " | arr length : " + arrLength);
+        System.out.println("...");
+        // --------------------
+        ExecutorServiceSort sorter = new ExecutorServiceSort(numThreads);
+        if (validate(sorter, arrLength, initSeed, numTests))
+            System.out.println(numTests + " tests passed successfully");
+        else
+            System.out.println("Failed");
     }
 
 }
