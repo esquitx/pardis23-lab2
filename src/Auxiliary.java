@@ -119,25 +119,4 @@ public class Auxiliary {
 
     }
 
-    public static void main(String[] args) {
-
-        // Test parameters
-        int numThreads = 8;
-        int arrLength = 1_000_000;
-        int initSeed = 69;
-        int numTests = 10;
-
-        // Testing
-
-        System.out.println("Starting tests...");
-        System.out.println("# threads : " + numThreads + " | arr length : " + arrLength);
-        System.out.println("...");
-        // --------------------
-        ExecutorServiceSort sorter = new ExecutorServiceSort(numThreads);
-        if (validate(sorter, arrLength, initSeed, numTests))
-            System.out.println(numTests + " tests passed successfully");
-        else
-            System.out.println("Failed");
-    }
-
 }
