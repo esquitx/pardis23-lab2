@@ -23,7 +23,7 @@ public class ThreadSort implements Sorter {
 
         @Override
         public void run() {
-            // Call merge sort in the required indexes
+            // Call meger sort in the required indexes
             mergeSort(arr, fromIndex, toIndex);
         }
 
@@ -63,13 +63,12 @@ public class ThreadSort implements Sorter {
         }
 
         // Merge results x thread
-        int mid = maxLim - 1;
-        for (int i = maxLim; i < arr.length; i += maxLim) {
-            int end = Math.min(i + maxLim - 1, arr.length - 1);
+        for (int i = 0; i < arr.length; i += maxLim) {
+            int mid = i == 0 ? 0 : i - 1;
+            int remain = (arr.length - i);
+            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
 
-            // Merge and update starting point
             merge(arr, 0, mid, end);
-            mid = end;
         }
 
     }
