@@ -35,7 +35,10 @@ public class ForkJoinPoolSort implements Sorter {
                 MergeSortTask leftTask = new MergeSortTask(arr, fromIndex, mid);
                 MergeSortTask rightTask = new MergeSortTask(arr, mid + 1, toIndex);
 
-                invokeAll(leftTask, rightTask);
+                leftTask.fork();
+                rightTask.compute();
+
+                leftTask.join();
 
                 merge(arr, fromIndex, mid, toIndex);
             }
@@ -84,7 +87,7 @@ public class ForkJoinPoolSort implements Sorter {
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int fromIndex, int toIndex) {
+    private void mergeSort(int[] arr, int fromIndex, int toIndex) {
 
         if (fromIndex < toIndex) {
             int mid = fromIndex + Math.floorDiv(toIndex - fromIndex, 2);
@@ -100,6 +103,7 @@ public class ForkJoinPoolSort implements Sorter {
 
         ForkJoinPool pool = new ForkJoinPool(threads);
         pool.invoke(new MergeSortTask(arr, 0, arr.length - 1));
+        pool.shutdown();
 
     }
 
