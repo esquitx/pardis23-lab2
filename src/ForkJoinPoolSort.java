@@ -25,8 +25,11 @@ public class ForkJoinPoolSort implements Sorter {
 
         @Override
         protected void compute() {
+
             int fragmentSize = toIndex - fromIndex;
-            if (fragmentSize <= MIN_THRESHOLD) {
+            if (fragmentSize <= 0) {
+                return;
+            } else if (fragmentSize <= MIN_THRESHOLD) {
                 mergeSort(arr, fromIndex, toIndex);
             } else {
                 int mid = fromIndex + Math.floorDiv(fragmentSize, MIN_THRESHOLD);
@@ -41,6 +44,7 @@ public class ForkJoinPoolSort implements Sorter {
     }
 
     private void merge(int[] arr, int start, int mid, int end) {
+
         int[] temp = new int[(end - start) + 1];
 
         // Initialize swapping indexes
@@ -83,12 +87,13 @@ public class ForkJoinPoolSort implements Sorter {
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
     void mergeSort(int[] arr, int fromIndex, int toIndex) {
 
-        if (toIndex - fromIndex > 0) {
-            int mid = (fromIndex + toIndex) / 2;
+        if (toIndex - fromIndex >= 0) {
+            int mid = fromIndex + Math.floorDiv(toIndex - fromIndex, 2);
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
             merge(arr, fromIndex, mid, toIndex);
         }
+
     }
 
     @Override

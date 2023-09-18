@@ -89,8 +89,8 @@ public class ThreadSort implements Sorter {
         } else {
             int mid = fromIndex + Math.floorDiv(fragmentSize, 2);
 
-            SorterThread left = new SorterThread(arr, fromIndex, mid, remainingThreads - 1);
-            SorterThread right = new SorterThread(arr, mid + 1, toIndex, remainingThreads - 1);
+            SorterThread left = new SorterThread(arr, fromIndex, mid, remainingThreads - 2);
+            SorterThread right = new SorterThread(arr, mid + 1, toIndex, remainingThreads - 2);
 
             left.start();
             right.start();
