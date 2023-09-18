@@ -27,16 +27,15 @@ public class ForkJoinPoolSort implements Sorter {
         protected void compute() {
 
             int fragmentSize = toIndex - fromIndex;
-            if (fragmentSize <= 0) {
-                return;
-            } else if (fragmentSize <= MIN_THRESHOLD) {
+
+            if (fragmentSize <= MIN_THRESHOLD) {
                 mergeSort(arr, fromIndex, toIndex);
             } else {
-                int mid = fromIndex + Math.floorDiv(fragmentSize, MIN_THRESHOLD);
-                MergeSortTask left = new MergeSortTask(arr, fromIndex, mid);
-                MergeSortTask right = new MergeSortTask(arr, mid + 1, toIndex);
+                int mid = fromIndex + Math.floorDiv(fragmentSize, 2);
+                MergeSortTask leftTask = new MergeSortTask(arr, fromIndex, mid);
+                MergeSortTask rightTask = new MergeSortTask(arr, mid + 1, toIndex);
 
-                invokeAll(left, right);
+                invokeAll(leftTask, rightTask);
 
                 merge(arr, fromIndex, mid, toIndex);
             }
@@ -87,7 +86,7 @@ public class ForkJoinPoolSort implements Sorter {
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
     void mergeSort(int[] arr, int fromIndex, int toIndex) {
 
-        if (toIndex - fromIndex >= 0) {
+        if (fromIndex < toIndex) {
             int mid = fromIndex + Math.floorDiv(toIndex - fromIndex, 2);
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
@@ -101,8 +100,6 @@ public class ForkJoinPoolSort implements Sorter {
 
         ForkJoinPool pool = new ForkJoinPool(threads);
         pool.invoke(new MergeSortTask(arr, 0, arr.length - 1));
-
-        pool.shutdown();
 
     }
 
