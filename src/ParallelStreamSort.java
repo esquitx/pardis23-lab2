@@ -15,33 +15,16 @@
  * myPool.submit(() -> "my parallel stream method / function");
  */
 
-import java.util.concurrent.ForkJoinPool;
-
 public class ParallelStreamSort implements Sorter {
 
     public final int threads;
-    private final int MIN_CHUNK = 16;
+    private final int MIN_THRESHOLD = 128;
 
     public ParallelStreamSort(int threads) {
         this.threads = threads;
     }
 
     public void sort(int[] arr) {
-
-        // Divide array workload in chunks
-        boolean isFair = arr.length % threads == 0;
-        int maxLim = isFair ? arr.length / threads : arr.length / (threads - 1);
-        maxLim = maxLim < threads || maxLim < MIN_CHUNK ? threads : maxLim;
-
-        ForkJoinPool workerPool = new ForkJoinPool(threads);
-        for (int i = 0; i < threads; i++) {
-            int beg = i;
-            int remain = (arr.length) - i;
-            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-            workerPool.submit(() -> System.out.println("I am thread " + Thread.currentThread().getName()));
-        }
-
-        workerPool.shutdown();
 
     }
 

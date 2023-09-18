@@ -1,79 +1,36 @@
 
-import java.util.ArrayList;
-
 public class ThreadSort implements Sorter {
 
     public final int threads;
-    private final int MIN_CHUNK = 16;
+
+    private final int MIN_THRESHOLD = 128;
 
     public ThreadSort(int threads) {
         this.threads = threads;
     }
 
-    private class SorterThread implements Runnable {
+    private class SorterThread extends Thread {
 
         int[] arr;
-        final int fromIndex, toIndex;
+        int fromIndex, toIndex;
+        int remainingThreads;
 
-        SorterThread(int[] arr, int fromIndex, int toIndex) {
+        SorterThread(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
             this.arr = arr;
             this.fromIndex = fromIndex;
             this.toIndex = toIndex;
+            this.remainingThreads = remainingThreads;
+
         }
 
         @Override
         public void run() {
-            // Call meger sort in the required indexes
-            mergeSort(arr, fromIndex, toIndex);
+            parallelMergeSort(arr, fromIndex, toIndex, remainingThreads);
         }
 
     }
 
-    public void sort(int[] arr) {
-
-        // Decide in which index bracket each thread works on;
-        boolean isFair = arr.length % threads == 0; // Check if division is fair ( no unbalanced work load )
-        int maxLim = isFair ? arr.length / threads : arr.length / (threads - 1); // if fair,divide evenly. If
-                                                                                 // not, use one less thread and
-                                                                                 // leave "extra" for last
-                                                                                 // thread.
-        maxLim = maxLim < threads || maxLim < MIN_CHUNK ? threads : maxLim; // If only one thread needed,
-                                                                            // assign all to that thread
-
-        // Keep thread record
-        ArrayList<Thread> threads = new ArrayList<Thread>();
-        for (int i = 0; i < arr.length; i += maxLim) {
-            int beg = i;
-            int remain = (arr.length) - i;
-            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-            final Thread t = new Thread(new SorterThread(arr, beg, end));
-            // Add thread to thread register
-            threads.add(t);
-            // Start thread task
-            t.start();
-        }
-
-        // Join threads
-        for (Thread t : threads) {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Merge results x thread
-        for (int i = 0; i < arr.length; i += maxLim) {
-            int mid = i == 0 ? 0 : i - 1;
-            int remain = (arr.length - i);
-            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-
-            merge(arr, 0, mid, end);
-        }
-
-    }
-
-    public static void merge(int[] arr, int start, int mid, int end) {
+    private void merge(int[] arr, int start, int mid, int end) {
         int[] temp = new int[(end - start) + 1];
 
         // Initialize swapping indexes
@@ -114,13 +71,47 @@ public class ThreadSort implements Sorter {
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int start, int end) {
-        if (start < end) {
-            int mid = (start + end) / 2;
-            mergeSort(arr, start, mid);
-            mergeSort(arr, mid + 1, end);
-            merge(arr, start, mid, end);
+    void mergeSort(int[] arr, int fromIndex, int toIndex) {
+
+        if (toIndex - fromIndex > 0) {
+            int mid = (fromIndex + toIndex) / 2;
+            mergeSort(arr, fromIndex, mid);
+            mergeSort(arr, mid + 1, toIndex);
+            merge(arr, fromIndex, mid, toIndex);
         }
+    }
+
+    void parallelMergeSort(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
+
+        int fragmentSize = (toIndex - fromIndex);
+        if ((remainingThreads <= 1) || fragmentSize < MIN_THRESHOLD) {
+            mergeSort(arr, fromIndex, toIndex);
+        } else {
+            int mid = fromIndex + Math.floorDiv(fragmentSize, 2);
+
+            SorterThread left = new SorterThread(arr, fromIndex, mid, remainingThreads - 1);
+            SorterThread right = new SorterThread(arr, mid + 1, toIndex, remainingThreads - 1);
+
+            left.start();
+            right.start();
+
+            try {
+                left.join();
+                right.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            merge(arr, fromIndex, mid, toIndex);
+
+        }
+    }
+
+    @Override
+    public void sort(int[] arr) {
+
+        parallelMergeSort(arr, 0, arr.length - 1, threads);
+
     }
 
     public int getThreads() {

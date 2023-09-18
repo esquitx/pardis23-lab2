@@ -1,103 +1,49 @@
 
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
-
-import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 public class ExecutorServiceSort implements Sorter {
 
-    public final int threads;
-    private final int MIN_CHUNK = 16;
+    private final int threads;
+    private final int MIN_THRESHOLD = 128;
+    private ExecutorService pool;
 
     public ExecutorServiceSort(int threads) {
         this.threads = threads;
     }
 
-    private class SorterThread implements Runnable {
+    class MergeSortTask extends RecursiveAction {
 
         int[] arr;
-        final int fromIndex, toIndex;
+        int fromIndex;
+        int toIndex;
 
-        SorterThread(int[] arr, int fromIndex, int toIndex) {
+        public MergeSortTask(int[] arr, int fromIndex, int toIndex) {
             this.arr = arr;
             this.fromIndex = fromIndex;
             this.toIndex = toIndex;
         }
 
         @Override
-        public void run() {
-            // Call merge sort in the required indexes
-            mergeSort(arr, fromIndex, toIndex);
-        }
+        protected void compute() {
+            int fragmentSize = toIndex - fromIndex;
+            if (fragmentSize <= MIN_THRESHOLD) {
+                mergeSort(arr, fromIndex, toIndex);
+            } else {
+                int mid = fromIndex + Math.floorDiv(fragmentSize, MIN_THRESHOLD);
+                MergeSortTask left = new MergeSortTask(arr, fromIndex, mid);
+                MergeSortTask right = new MergeSortTask(arr, mid + 1, toIndex);
 
-    }
+                invokeAll(left, right);
 
-    @Override
-    public void sort(int[] arr) {
-
-        ExecutorService executor = Executors.newFixedThreadPool(threads);
-
-        // Sanity check - no need to sort this array :)
-        if (arr.length < 1) {
-            return;
-        }
-
-        // Decide in which index bracket each thread works on;
-        boolean isFair = arr.length % threads == 0; // Check if division is fair ( no unbalanced work load )
-        int maxLim = isFair ? arr.length / threads : arr.length / (threads - 1); // if fair,divide evenly. If
-                                                                                 // not, use one less thread and
-                                                                                 // leave "extra" for last
-                                                                                 // thread.
-        maxLim = maxLim < threads || maxLim < MIN_CHUNK ? threads : maxLim; // If only one thread needed,
-                                                                            // assign all to that thread
-
-        ArrayList<Future<?>> taskList = new ArrayList<Future<?>>();
-        for (int i = 0; i < arr.length; i += maxLim) {
-            int beg = i;
-            int remain = (arr.length) - i;
-            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-            Future<?> task = executor.submit(new SorterThread(arr, beg, end));
-            taskList.add(task);
-        }
-
-        // Wait for tasks to finish
-        for (Future<?> task : taskList) {
-            try {
-                task.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+                merge(arr, fromIndex, mid, toIndex);
             }
         }
-
-        // Merge results x thread
-        for (int i = 0; i < arr.length; i += maxLim) {
-            int mid = i == 0 ? 0 : i - 1;
-            int remain = (arr.length - i);
-            int end = remain < maxLim ? i + (remain - 1) : i + (maxLim - 1);
-
-            merge(arr, 0, mid, end);
-        }
-
-        // SECURITY : shutdown executor
-        executor.shutdown();
-        try {
-
-            if (!executor.awaitTermination(10_000, TimeUnit.MILLISECONDS)) {
-                System.out.println("Some tasks are still pending!");
-            }
-            ;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
     }
 
-    public static void merge(int[] arr, int start, int mid, int end) {
+    private void merge(int[] arr, int start, int mid, int end) {
         int[] temp = new int[(end - start) + 1];
 
         // Initialize swapping indexes
@@ -138,13 +84,24 @@ public class ExecutorServiceSort implements Sorter {
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int start, int end) {
-        if (start < end) {
-            int mid = (start + end) / 2;
-            mergeSort(arr, start, mid);
-            mergeSort(arr, mid + 1, end);
-            merge(arr, start, mid, end);
+    void mergeSort(int[] arr, int fromIndex, int toIndex) {
+
+        if (toIndex - fromIndex > 0) {
+            int mid = (fromIndex + toIndex) / 2;
+            mergeSort(arr, fromIndex, mid);
+            mergeSort(arr, mid + 1, toIndex);
+            merge(arr, fromIndex, mid, toIndex);
         }
+    }
+
+    @Override
+    public void sort(int[] arr) {
+
+        ForkJoinPool pool = new ForkJoinPool(threads);
+        pool.invoke(new MergeSortTask(arr, 0, arr.length - 1));
+
+        pool.shutdown();
+
     }
 
     @Override

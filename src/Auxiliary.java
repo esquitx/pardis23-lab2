@@ -28,7 +28,10 @@ public class Auxiliary {
     public static double[] getMeanAndStDev(long[] data) {
 
         // Calculate mean
-        long sum = LongStream.of(data).sum();
+        double sum = 0.0;
+        for (double n : data) {
+            sum += n;
+        }
         double mean = sum / data.length;
 
         // Calculate stdev (from variance)
