@@ -59,8 +59,8 @@ public class Auxiliary {
         long[] measurements = new long[m];
 
         int seed = 0;
-        seed = seed + initSeed;
         for (int i = 0; i < m; i++) {
+            seed += initSeed;
             int[] arr = arrayGenerate(n, seed);
             long startTime = System.nanoTime();
             sorter.sort(arr);
