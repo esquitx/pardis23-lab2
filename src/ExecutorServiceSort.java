@@ -11,7 +11,6 @@ public class ExecutorServiceSort implements Sorter {
 
     public ExecutorServiceSort(int threads) {
         this.threads = threads;
-        this.executor = Executors.newFixedThreadPool(threads);
     }
 
     private void merge(int[] arr, int start, int mid, int end) {
@@ -67,7 +66,7 @@ public class ExecutorServiceSort implements Sorter {
 
     }
 
-    private void parallelMergeSort(int[] arr, int fromIndex, int toIndex) {
+    private void parallelMergeSort(ExecutorService executor, int[] arr, int fromIndex, int toIndex) {
 
         int fragmentSize = (toIndex - fromIndex);
 
@@ -77,8 +76,8 @@ public class ExecutorServiceSort implements Sorter {
 
             int mid = (fromIndex + toIndex) >>> 1;
 
-            Future<?> left = executor.submit(() -> parallelMergeSort(arr, fromIndex, mid));
-            Future<?> right = executor.submit(() -> parallelMergeSort(arr, mid + 1, toIndex));
+            Future<?> left = executor.submit(() -> parallelMergeSort(executor, arr, fromIndex, mid));
+            Future<?> right = executor.submit(() -> parallelMergeSort(executor, arr, mid + 1, toIndex));
 
             try {
                 left.get();
@@ -95,7 +94,8 @@ public class ExecutorServiceSort implements Sorter {
     @Override
     public void sort(int[] arr) {
 
-        parallelMergeSort(arr, 0, arr.length - 1);
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        parallelMergeSort(executor, arr, 0, arr.length - 1);
         executor.shutdown();
 
     }
