@@ -60,8 +60,11 @@ public class Auxiliary {
 
         int seed = 0;
         for (int i = 0; i < m; i++) {
+            // Set new seed to generate array
             seed += initSeed;
             int[] arr = arrayGenerate(n, seed);
+
+            // Time sorting
             long startTime = System.nanoTime();
             sorter.sort(arr);
             long endTime = System.nanoTime();
@@ -86,34 +89,22 @@ public class Auxiliary {
 
         // Reference array
         int seed = 0;
-        seed = seed + initSeed;
         for (int i = 0; i < m; i++) {
-
-            // Generate array and reference copy
+            // Set new seed to generate array
+            seed += initSeed;
             int[] arr = arrayGenerate(seed, n);
+
+            // Copy for reference
             int[] test = Arrays.copyOf(arr, arr.length);
 
             // Sort reference array
             Arrays.sort(test);
 
-            // // Start test
-            // System.out.println("Attempt - " + (i + 1));
-            // System.out.println("-------------");
-
-            // long startTime = System.nanoTime();
+            // Sort using our method
             sorter.sort(arr);
-            // long endTime = System.nanoTime();
-
-            // System.out.println("Start time : " + startTime);
-            // System.out.println("End time: " + endTime);
-            // System.out.println("Time taken: " + (endTime - startTime));
-            // System.out.println();
 
             if (!Arrays.equals(test, arr))
                 return false;
-
-            // Change seed
-            seed = seed + initSeed;
         }
 
         // If all tests successful, return true

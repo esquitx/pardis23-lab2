@@ -5,7 +5,7 @@ import java.util.concurrent.RecursiveAction;
 public class ForkJoinPoolSort implements Sorter {
 
     public final int threads;
-    private final int MIN_THRESHOLD = 128;
+    private final int MIN_THRESHOLD = 8192;
 
     public ForkJoinPoolSort(int threads) {
         this.threads = threads;
@@ -31,14 +31,11 @@ public class ForkJoinPoolSort implements Sorter {
             if (fragmentSize <= MIN_THRESHOLD) {
                 mergeSort(arr, fromIndex, toIndex);
             } else {
-                int mid = fromIndex + Math.floorDiv(fragmentSize, 2);
+                int mid = (fromIndex + toIndex) >>> 1;
                 MergeSortTask leftTask = new MergeSortTask(arr, fromIndex, mid);
                 MergeSortTask rightTask = new MergeSortTask(arr, mid + 1, toIndex);
 
-                leftTask.fork();
-                rightTask.compute();
-
-                leftTask.join();
+                invokeAll(leftTask, rightTask);
 
                 merge(arr, fromIndex, mid, toIndex);
             }
@@ -90,7 +87,7 @@ public class ForkJoinPoolSort implements Sorter {
     private void mergeSort(int[] arr, int fromIndex, int toIndex) {
 
         if (fromIndex < toIndex) {
-            int mid = fromIndex + Math.floorDiv(toIndex - fromIndex, 2);
+            int mid = (fromIndex + toIndex) >>> 1;
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
             merge(arr, fromIndex, mid, toIndex);
@@ -104,7 +101,6 @@ public class ForkJoinPoolSort implements Sorter {
         ForkJoinPool pool = new ForkJoinPool(threads);
         pool.invoke(new MergeSortTask(arr, 0, arr.length - 1));
         pool.shutdown();
-
     }
 
     @Override

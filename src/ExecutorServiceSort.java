@@ -1,12 +1,11 @@
-import java.util.concurrent.ExecutionException;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class ExecutorServiceSort implements Sorter {
 
     private final int threads;
-    private final int MIN_THRESHOLD = 128;
+    private final int MIN_THRESHOLD = 8192;
 
     public ExecutorServiceSort(int threads) {
         this.threads = threads;
@@ -29,11 +28,13 @@ public class ExecutorServiceSort implements Sorter {
         public void run() {
 
             int fragmentSize = (toIndex - fromIndex);
-            if (fragmentSize <= MIN_THRESHOLD) {
+
+            if (fragmentSize < MIN_THRESHOLD) {
                 mergeSort(arr, fromIndex, toIndex);
 
             } else {
-                int mid = fromIndex + Math.floorDiv(fragmentSize, 2);
+
+                int mid = (fromIndex + toIndex) >>> 1;
 
                 MergeSortTask leftTask = new MergeSortTask(executor, arr, fromIndex, mid);
                 MergeSortTask rightTask = new MergeSortTask(executor, arr, mid + 1, toIndex);
@@ -92,7 +93,7 @@ public class ExecutorServiceSort implements Sorter {
     private void mergeSort(int[] arr, int fromIndex, int toIndex) {
 
         if (fromIndex < toIndex) {
-            int mid = fromIndex + Math.floorDiv(toIndex - fromIndex, 2);
+            int mid = (fromIndex + toIndex) >>> 1;
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
             merge(arr, fromIndex, mid, toIndex);
@@ -107,7 +108,6 @@ public class ExecutorServiceSort implements Sorter {
         MergeSortTask mergeTask = new MergeSortTask(executor, arr, 0, arr.length - 1);
         executor.execute(mergeTask);
         executor.shutdown();
-
     }
 
     @Override

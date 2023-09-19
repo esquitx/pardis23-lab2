@@ -18,7 +18,7 @@
 public class ParallelStreamSort implements Sorter {
 
     public final int threads;
-    private final int MIN_THRESHOLD = 128;
+    private final int MIN_THRESHOLD = 8192;
 
     public ParallelStreamSort(int threads) {
         this.threads = threads;
@@ -32,11 +32,4 @@ public class ParallelStreamSort implements Sorter {
         return threads;
     }
 
-    public static void main(String[] args) {
-
-        int[] arr = { 1, 2, 3, 4 };
-
-        ParallelStreamSort sorter = new ParallelStreamSort(4);
-        sorter.sort(arr);
-    }
 }

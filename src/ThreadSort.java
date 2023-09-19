@@ -3,7 +3,7 @@ public class ThreadSort implements Sorter {
 
     public final int threads;
 
-    private final int MIN_THRESHOLD = 128;
+    private final int MIN_THRESHOLD = 8192;
 
     public ThreadSort(int threads) {
         this.threads = threads;
