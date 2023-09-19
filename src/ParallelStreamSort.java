@@ -1,3 +1,9 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 /**
  * Sort using Java's ParallelStreams and Lambda functions.
@@ -13,9 +19,11 @@
  * parallel streams by wrapping it in a ForkJoinPool.
  * ForkJoinPool myPool = new ForkJoinPool(threads);
  * myPool.submit(() -> "my parallel stream method / function");
+ * 
+ * @param <T>
  */
 
-public class ParallelStreamSort implements Sorter {
+public class ParallelStreamSort<T> implements Sorter {
 
     public final int threads;
     private final int MIN_THRESHOLD = 8192;
@@ -24,69 +32,48 @@ public class ParallelStreamSort implements Sorter {
         this.threads = threads;
     }
 
-    private void merge(int[] arr, int start, int mid, int end) {
-        int[] temp = new int[(end - start) + 1];
-
-        // Initialize swapping indexes
-        int i = start;
-        int j = mid + 1;
-        int k = 0;
-
-        //
-        while (i <= mid && j <= end) {
-            if (arr[i] <= arr[j]) {
-                temp[k] = arr[i];
-                i += 1;
+    private List<Integer> mergeFragments(List<Integer> list1, List<Integer> list2) {
+        List<Integer> merged = new ArrayList<>();
+        int i = 0, j = 0;
+        while (i < list1.size() && j < list2.size()) {
+            if (list1.get(i) <= list2.get(j)) {
+                merged.add(list1.get(i++));
             } else {
-                temp[k] = arr[j];
-                j += 1;
+                merged.add(list2.get(j++));
             }
-            k += 1;
         }
-
-        // Add "forgotten" elements from first
-        while (i <= mid) {
-            temp[k] = arr[i];
-            i += 1;
-            k += 1;
+        while (i < list1.size()) {
+            merged.add(list1.get(i++));
         }
-
-        // Add "forgotten" elements to temp array from second half
-        while (j <= end) {
-            temp[k] = arr[j];
-            j += 1;
-            k += 1;
+        while (j < list2.size()) {
+            merged.add(list2.get(j++));
         }
-
-        // Copy from temp to orginal array
-        for (i = start, k = 0; i <= end; i++, k++) {
-            arr[i] = temp[k];
-        }
+        return merged;
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int fromIndex, int toIndex) {
+    void mergeSort(List<Integer> list) {
 
-        if (toIndex - fromIndex > 0) {
-            int mid = (fromIndex + toIndex) / 2;
-            mergeSort(arr, fromIndex, mid);
-            mergeSort(arr, mid + 1, toIndex);
-            merge(arr, fromIndex, mid, toIndex);
-        }
     }
 
-    void parallelMergeSort(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
+    int[] parallelMergeSort(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
 
-        int fragmentSize = (toIndex - fromIndex);
-        if ((remainingThreads <= 1) || fragmentSize < MIN_THRESHOLD) {
-            mergeSort(arr, fromIndex, toIndex);
-        } else {
+        int fragmentSize = arr.length / (threads - 1);
 
-            int mid = (fromIndex + toIndex) >>> 1;
-            // TODO : code in parallel stream
+        List<List<Integer>> fragments = new ArrayList<>();
 
-            merge(arr, fromIndex, mid, toIndex);
+        for (int i = 0; i < arr.length; i += fragmentSize) {
+            List<Integer> fragment = new ArrayList<>(
+                    Arrays.asList(Arrays.copyOfRange(arr, i, Math.min(arr.length, i + fragmentSize))));
+            fragments.add(fragment);
 
+        }
+
+        fragments.parallelStream().forEach(fragment -> Collections.sort(fragment));
+
+        List<Integer> sorted = new ArrayList<>();
+        for (List<Integer> fragment : fragments) {
+            sorted = mergeFragments(sorted, fragment);
         }
     }
 
