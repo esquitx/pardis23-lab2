@@ -1,51 +1,17 @@
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ExecutorServiceSort implements Sorter {
 
     private final int threads;
+    private ExecutorService executor;
     private final int MIN_THRESHOLD = 8192;
 
     public ExecutorServiceSort(int threads) {
         this.threads = threads;
-    }
-
-    class MergeSortTask implements Runnable {
-        ExecutorService executor;
-        int[] arr;
-        int fromIndex;
-        int toIndex;
-
-        public MergeSortTask(ExecutorService executor, int[] arr, int fromIndex, int toIndex) {
-            this.arr = arr;
-            this.executor = executor;
-            this.fromIndex = fromIndex;
-            this.toIndex = toIndex;
-        }
-
-        @Override
-        public void run() {
-
-            int fragmentSize = (toIndex - fromIndex);
-
-            if (fragmentSize < MIN_THRESHOLD) {
-                mergeSort(arr, fromIndex, toIndex);
-
-            } else {
-
-                int mid = (fromIndex + toIndex) >>> 1;
-
-                MergeSortTask leftTask = new MergeSortTask(executor, arr, fromIndex, mid);
-                MergeSortTask rightTask = new MergeSortTask(executor, arr, mid + 1, toIndex);
-
-                executor.execute(leftTask);
-                executor.execute(rightTask);
-
-                merge(arr, fromIndex, mid, toIndex);
-
-            }
-        }
+        this.executor = Executors.newFixedThreadPool(threads);
     }
 
     private void merge(int[] arr, int start, int mid, int end) {
@@ -101,13 +67,37 @@ public class ExecutorServiceSort implements Sorter {
 
     }
 
+    private void parallelMergeSort(int[] arr, int fromIndex, int toIndex) {
+
+        int fragmentSize = (toIndex - fromIndex);
+
+        if (fragmentSize <= MIN_THRESHOLD) {
+            mergeSort(arr, fromIndex, toIndex);
+        } else {
+
+            int mid = (fromIndex + toIndex) >>> 1;
+
+            Future<?> left = executor.submit(() -> parallelMergeSort(arr, fromIndex, mid));
+            Future<?> right = executor.submit(() -> parallelMergeSort(arr, mid + 1, toIndex));
+
+            try {
+                left.get();
+                right.get();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                merge(arr, fromIndex, mid, toIndex);
+            }
+
+        }
+    }
+
     @Override
     public void sort(int[] arr) {
 
-        ExecutorService executor = Executors.newFixedThreadPool(threads);
-        MergeSortTask mergeTask = new MergeSortTask(executor, arr, 0, arr.length - 1);
-        executor.execute(mergeTask);
+        parallelMergeSort(arr, 0, arr.length - 1);
         executor.shutdown();
+
     }
 
     @Override
