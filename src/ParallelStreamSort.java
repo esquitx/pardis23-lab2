@@ -3,7 +3,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Spliterator;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Sort using Java's ParallelStreams and Lambda functions.
@@ -32,53 +35,13 @@ public class ParallelStreamSort<T> implements Sorter {
         this.threads = threads;
     }
 
-    private List<Integer> mergeFragments(List<Integer> list1, List<Integer> list2) {
-        List<Integer> merged = new ArrayList<>();
-        int i = 0, j = 0;
-        while (i < list1.size() && j < list2.size()) {
-            if (list1.get(i) <= list2.get(j)) {
-                merged.add(list1.get(i++));
-            } else {
-                merged.add(list2.get(j++));
-            }
-        }
-        while (i < list1.size()) {
-            merged.add(list1.get(i++));
-        }
-        while (j < list2.size()) {
-            merged.add(list2.get(j++));
-        }
-        return merged;
-    }
-
-    // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(List<Integer> list) {
-
-    }
-
-    int[] parallelMergeSort(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
-
-        int fragmentSize = arr.length / (threads - 1);
-
-        List<List<Integer>> fragments = new ArrayList<>();
-
-        for (int i = 0; i < arr.length; i += fragmentSize) {
-            List<Integer> fragment = new ArrayList<>(
-                    Arrays.asList(Arrays.copyOfRange(arr, i, Math.min(arr.length, i + fragmentSize))));
-            fragments.add(fragment);
-
-        }
-
-        fragments.parallelStream().forEach(fragment -> Collections.sort(fragment));
-
-        List<Integer> sorted = new ArrayList<>();
-        for (List<Integer> fragment : fragments) {
-            sorted = mergeFragments(sorted, fragment);
-        }
-    }
+    void 
 
     public void sort(int[] arr) {
 
+        ForkJoinPool pool = new ForkJoinPool(threads);
+        pool.submit(() -> parallelStreamMergeSort(arr, 0, arr.length -1));
+        pool.shutdown();
     }
 
     public int getThreads() {

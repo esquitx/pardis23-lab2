@@ -74,7 +74,7 @@ public class ThreadSort implements Sorter {
     void mergeSort(int[] arr, int fromIndex, int toIndex) {
 
         if (toIndex - fromIndex > 0) {
-            int mid = (fromIndex + toIndex) / 2;
+            int mid = (fromIndex + toIndex) >>> 1;
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
             merge(arr, fromIndex, mid, toIndex);
@@ -87,7 +87,8 @@ public class ThreadSort implements Sorter {
         if ((remainingThreads <= 1) || fragmentSize < MIN_THRESHOLD) {
             mergeSort(arr, fromIndex, toIndex);
         } else {
-            int mid = fromIndex + Math.floorDiv(fragmentSize, 2);
+
+            int mid = (fromIndex + toIndex) >>> 1;
 
             SorterThread left = new SorterThread(arr, fromIndex, mid, remainingThreads / 2);
             SorterThread right = new SorterThread(arr, mid + 1, toIndex, remainingThreads / 2);

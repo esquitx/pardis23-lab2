@@ -26,9 +26,9 @@ public class ForkJoinPoolSort implements Sorter {
         @Override
         protected void compute() {
 
-            int fragmentSize = toIndex - fromIndex;
-
-            if (fragmentSize <= MIN_THRESHOLD) {
+            int fragmentSize = (toIndex - fromIndex);
+            int availableThreads = (threads - Thread.activeCount());
+            if ((fragmentSize <= MIN_THRESHOLD) || availableThreads <= 1) {
                 mergeSort(arr, fromIndex, toIndex);
             } else {
                 int mid = (fromIndex + toIndex) >>> 1;

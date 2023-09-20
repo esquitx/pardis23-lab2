@@ -28,15 +28,15 @@ public class Auxiliary {
 
         // Calculate mean
         double sum = 0.0;
-        for (double n : data) {
-            sum += n;
+        for (double time : data) {
+            sum += time;
         }
-        double mean = sum / data.length;
+        double mean = (sum / data.length);
 
         // Calculate stdev (from variance)
         double variance = 0.0;
-        for (long value : data) {
-            variance += Math.pow(value - mean, 2);
+        for (double time : data) {
+            variance += Math.pow(time - mean, 2);
         }
         double stdev = Math.sqrt(variance / data.length);
 
@@ -56,7 +56,7 @@ public class Auxiliary {
      */
     public static double[] measure(Sorter sorter, int n, int initSeed, int m) {
         double[] result = new double[2];
-        long[] measurements = new long[m];
+        long[] executionTimes = new long[m];
 
         int seed = 0;
         for (int i = 0; i < m; i++) {
@@ -68,11 +68,11 @@ public class Auxiliary {
             long startTime = System.nanoTime();
             sorter.sort(arr);
             long endTime = System.nanoTime();
-            measurements[i] = (endTime - startTime);
+            executionTimes[i] = (endTime - startTime);
         }
 
         // Calculate data
-        result = getMeanAndStDev(measurements);
+        result = getMeanAndStDev(executionTimes);
         return result;
     }
 

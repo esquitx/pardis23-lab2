@@ -6,7 +6,6 @@ import java.util.concurrent.Future;
 public class ExecutorServiceSort implements Sorter {
 
     private final int threads;
-    private ExecutorService executor;
     private final int MIN_THRESHOLD = 8192;
 
     public ExecutorServiceSort(int threads) {
@@ -69,8 +68,8 @@ public class ExecutorServiceSort implements Sorter {
     private void parallelMergeSort(ExecutorService executor, int[] arr, int fromIndex, int toIndex) {
 
         int fragmentSize = (toIndex - fromIndex);
-
-        if (fragmentSize <= MIN_THRESHOLD) {
+        int availableThreads = (threads - Thread.activeCount());
+        if ((fragmentSize <= MIN_THRESHOLD) || availableThreads <= 1) {
             mergeSort(arr, fromIndex, toIndex);
         } else {
 
