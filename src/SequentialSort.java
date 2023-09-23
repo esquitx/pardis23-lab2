@@ -1,65 +1,67 @@
 class SequentialSort implements Sorter {
 
-    // Implement MergeSort
-    @Override
-    public void sort(int[] arr) {
+    private void merge(int arr[], int fromIndex, int mid, int toIndex) {
 
-        // Record last index of the array
-        int lastIndex = arr.length - 1;
+        // Lentgh of two fragmentss
+        int szleft = mid - fromIndex + 1;
+        int szright = toIndex - mid;
 
-        // MERGE_SORT
-        mergeSort(arr, 0, lastIndex);
+        // Create temp arrays for left side and rigth side
+        int L[] = new int[szleft];
+        int R[] = new int[szright];
 
-    }
+        // Copy data to temp arrays
+        for (int i = 0; i < szleft; i++)
+            L[i] = arr[fromIndex + i];
+        for (int j = 0; j < szright; j++)
+            R[j] = arr[mid + 1 + j];
 
-    public static void merge(int[] arr, int start, int mid, int end) {
-        int[] temp = new int[(end - start) + 1];
+        // Merge the left/right temp arrays
+        int i = 0, j = 0;
 
-        // Initialize swapping indexes
-        int i = start;
-        int j = mid + 1;
-        int k = 0;
-
-        //
-        while (i <= mid && j <= end) {
-            if (arr[i] <= arr[j]) {
-                temp[k] = arr[i];
-                i += 1;
+        // Copy elements in order
+        int k = fromIndex;
+        while (i < szleft && j < szright) {
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
+                i++;
             } else {
-                temp[k] = arr[j];
-                j += 1;
+                arr[k] = R[j];
+                j++;
             }
-            k += 1;
+            k++;
         }
 
-        // Add "forgotten" elements from first
-        while (i <= mid) {
-            temp[k] = arr[i];
-            i += 1;
-            k += 1;
+        // Copy remaining elements of left side
+        while (i < szleft) {
+            arr[k] = L[i];
+            i++;
+            k++;
         }
 
-        // Add "forgotten" elements to temp array from second half
-        while (j <= end) {
-            temp[k] = arr[j];
-            j += 1;
-            k += 1;
-        }
-
-        // Copy from temp to orginal array
-        for (i = start, k = 0; i <= end; i++, k++) {
-            arr[i] = temp[k];
+        // Copy remaining elements of right
+        while (j < szright) {
+            arr[k] = R[j];
+            j++;
+            k++;
         }
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int start, int end) {
-        if (start < end) {
-            int mid = (start + end) / 2;
-            mergeSort(arr, start, mid);
-            mergeSort(arr, mid + 1, end);
-            merge(arr, start, mid, end);
+    void mergeSort(int[] arr, int fromIndex, int toIndex) {
+        if (fromIndex < toIndex) {
+            int mid = (fromIndex + toIndex) >>> 1;
+            mergeSort(arr, fromIndex, mid);
+            mergeSort(arr, mid + 1, toIndex);
+            merge(arr, fromIndex, mid, toIndex);
         }
+    }
+
+    // Implement MergeSort
+    @Override
+    public void sort(int[] arr) {
+        // MERGE_SORT
+        mergeSort(arr, 0, arr.length - 1);
     }
 
     @Override

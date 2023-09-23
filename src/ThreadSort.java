@@ -1,79 +1,63 @@
 
 public class ThreadSort implements Sorter {
 
-    public final int threads;
-
+    private final int threads;
     private final int MIN_THRESHOLD = 8192;
 
     public ThreadSort(int threads) {
         this.threads = threads;
     }
 
-    private class SorterThread extends Thread {
+    private void merge(int arr[], int fromIndex, int mid, int toIndex) {
 
-        int[] arr;
-        int fromIndex, toIndex;
-        int remainingThreads;
+        // Lentgh of two fragmentss
+        int szleft = mid - fromIndex + 1;
+        int szright = toIndex - mid;
 
-        SorterThread(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
-            this.arr = arr;
-            this.fromIndex = fromIndex;
-            this.toIndex = toIndex;
-            this.remainingThreads = remainingThreads;
+        // Create temp arrays for left side and rigth side
+        int L[] = new int[szleft];
+        int R[] = new int[szright];
 
-        }
+        // Copy data to temp arrays
+        for (int i = 0; i < szleft; i++)
+            L[i] = arr[fromIndex + i];
+        for (int j = 0; j < szright; j++)
+            R[j] = arr[mid + 1 + j];
 
-        @Override
-        public void run() {
-            parallelMergeSort(arr, fromIndex, toIndex, remainingThreads);
-        }
+        // Merge the left/right temp arrays
+        int i = 0, j = 0;
 
-    }
-
-    private void merge(int[] arr, int start, int mid, int end) {
-        int[] temp = new int[(end - start) + 1];
-
-        // Initialize swapping indexes
-        int i = start;
-        int j = mid + 1;
-        int k = 0;
-
-        //
-        while (i <= mid && j <= end) {
-            if (arr[i] <= arr[j]) {
-                temp[k] = arr[i];
-                i += 1;
+        // Copy elements in order
+        int k = fromIndex;
+        while (i < szleft && j < szright) {
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
+                i++;
             } else {
-                temp[k] = arr[j];
-                j += 1;
+                arr[k] = R[j];
+                j++;
             }
-            k += 1;
+            k++;
         }
 
-        // Add "forgotten" elements from first
-        while (i <= mid) {
-            temp[k] = arr[i];
-            i += 1;
-            k += 1;
+        // Copy remaining elements of left side
+        while (i < szleft) {
+            arr[k] = L[i];
+            i++;
+            k++;
         }
 
-        // Add "forgotten" elements to temp array from second half
-        while (j <= end) {
-            temp[k] = arr[j];
-            j += 1;
-            k += 1;
-        }
-
-        // Copy from temp to orginal array
-        for (i = start, k = 0; i <= end; i++, k++) {
-            arr[i] = temp[k];
+        // Copy remaining elements of right
+        while (j < szright) {
+            arr[k] = R[j];
+            j++;
+            k++;
         }
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    void mergeSort(int[] arr, int fromIndex, int toIndex) {
-
-        if (toIndex - fromIndex > 0) {
+    private void mergeSort(int[] arr, int fromIndex, int toIndex) {
+        if (fromIndex < toIndex) {
             int mid = (fromIndex + toIndex) >>> 1;
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
@@ -81,17 +65,17 @@ public class ThreadSort implements Sorter {
         }
     }
 
-    void parallelMergeSort(int[] arr, int fromIndex, int toIndex, int remainingThreads) {
+    private void parallelMergeSort(int[] arr, int fromIndex, int toIndex, int availableThreads) {
 
-        int fragmentSize = (toIndex - fromIndex);
-        if ((remainingThreads <= 1) || fragmentSize < MIN_THRESHOLD) {
+        int fragmentSize = (toIndex - fromIndex) + 1;
+        if ((availableThreads <= 1) || (fragmentSize <= MIN_THRESHOLD)) {
             mergeSort(arr, fromIndex, toIndex);
         } else {
 
             int mid = (fromIndex + toIndex) >>> 1;
 
-            SorterThread left = new SorterThread(arr, fromIndex, mid, remainingThreads / 2);
-            SorterThread right = new SorterThread(arr, mid + 1, toIndex, remainingThreads / 2);
+            Thread left = new Thread(() -> parallelMergeSort(arr, fromIndex, mid, availableThreads / 2));
+            Thread right = new Thread(() -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads / 2));
 
             left.start();
             right.start();
@@ -102,7 +86,6 @@ public class ThreadSort implements Sorter {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
             merge(arr, fromIndex, mid, toIndex);
 
         }
@@ -110,9 +93,7 @@ public class ThreadSort implements Sorter {
 
     @Override
     public void sort(int[] arr) {
-
         parallelMergeSort(arr, 0, arr.length - 1, threads);
-
     }
 
     public int getThreads() {

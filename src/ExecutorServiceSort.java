@@ -12,71 +12,78 @@ public class ExecutorServiceSort implements Sorter {
         this.threads = threads;
     }
 
-    private void merge(int[] arr, int start, int mid, int end) {
+    private void merge(int arr[], int fromIndex, int mid, int toIndex) {
 
-        int[] temp = new int[(end - start) + 1];
+        // Lentgh of two fragmentss
+        int szleft = mid - fromIndex + 1;
+        int szright = toIndex - mid;
 
-        // Initialize swapping indexes
-        int i = start;
-        int j = mid + 1;
-        int k = 0;
+        // Create temp arrays for left side and rigth side
+        int L[] = new int[szleft];
+        int R[] = new int[szright];
 
-        //
-        while (i <= mid && j <= end) {
-            if (arr[i] <= arr[j]) {
-                temp[k] = arr[i];
-                i += 1;
+        // Copy data to temp arrays
+        for (int i = 0; i < szleft; i++)
+            L[i] = arr[fromIndex + i];
+        for (int j = 0; j < szright; j++)
+            R[j] = arr[mid + 1 + j];
+
+        // Merge the left/right temp arrays
+        int i = 0, j = 0;
+
+        // Copy elements in order
+        int k = fromIndex;
+        while (i < szleft && j < szright) {
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
+                i++;
             } else {
-                temp[k] = arr[j];
-                j += 1;
+                arr[k] = R[j];
+                j++;
             }
-            k += 1;
+            k++;
         }
 
-        // Add "forgotten" elements from first
-        while (i <= mid) {
-            temp[k] = arr[i];
-            i += 1;
-            k += 1;
+        // Copy remaining elements of left side
+        while (i < szleft) {
+            arr[k] = L[i];
+            i++;
+            k++;
         }
 
-        // Add "forgotten" elements to temp array from second half
-        while (j <= end) {
-            temp[k] = arr[j];
-            j += 1;
-            k += 1;
-        }
-
-        // Copy from temp to orginal array
-        for (i = start, k = 0; i <= end; i++, k++) {
-            arr[i] = temp[k];
+        // Copy remaining elements of right
+        while (j < szright) {
+            arr[k] = R[j];
+            j++;
+            k++;
         }
     }
 
     // Based on MergeSort chapter of Algorithms - Fourth Edition - Sedgewick & Wayne
-    private void mergeSort(int[] arr, int fromIndex, int toIndex) {
-
+    void mergeSort(int[] arr, int fromIndex, int toIndex) {
         if (fromIndex < toIndex) {
             int mid = (fromIndex + toIndex) >>> 1;
             mergeSort(arr, fromIndex, mid);
             mergeSort(arr, mid + 1, toIndex);
             merge(arr, fromIndex, mid, toIndex);
-        }
 
+        }
     }
 
-    private void parallelMergeSort(ExecutorService executor, int[] arr, int fromIndex, int toIndex) {
+    private void parallelMergeSort(int[] arr, int fromIndex, int toIndex, ExecutorService executor,
+            int availableThreads) {
 
-        int fragmentSize = (toIndex - fromIndex);
-        int availableThreads = (threads - Thread.activeCount());
-        if ((fragmentSize <= MIN_THRESHOLD) || availableThreads <= 1) {
+        int fragmentSize = (toIndex - fromIndex) + 1;
+        if ((availableThreads <= 1) || (fragmentSize <= MIN_THRESHOLD)) {
             mergeSort(arr, fromIndex, toIndex);
         } else {
 
             int mid = (fromIndex + toIndex) >>> 1;
 
-            Future<?> left = executor.submit(() -> parallelMergeSort(executor, arr, fromIndex, mid));
-            Future<?> right = executor.submit(() -> parallelMergeSort(executor, arr, mid + 1, toIndex));
+            Future<?> left = executor
+                    .submit(() -> parallelMergeSort(arr, fromIndex, mid, executor, availableThreads / 2));
+            Future<?> right = executor
+                    .submit(() -> parallelMergeSort(arr, mid + 1, toIndex, executor, availableThreads / 2));
 
             try {
                 left.get();
@@ -94,8 +101,15 @@ public class ExecutorServiceSort implements Sorter {
     public void sort(int[] arr) {
 
         ExecutorService executor = Executors.newFixedThreadPool(threads);
-        parallelMergeSort(executor, arr, 0, arr.length - 1);
-        executor.shutdown();
+        Future<?> task = executor.submit(() -> parallelMergeSort(arr, 0, arr.length - 1, executor, threads));
+
+        try {
+            task.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            executor.shutdown();
+        }
 
     }
 
