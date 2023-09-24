@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  * Sort using Java's ParallelStreams and Lambda functions.
@@ -89,19 +90,24 @@ public class ParallelStreamSort implements Sorter {
     private void parallelMergeSort(int[] arr, int fromIndex, int toIndex, int availableThreads) {
 
         int fragmentSize = (toIndex - fromIndex) + 1;
-
         if ((availableThreads <= 1) || (fragmentSize <= MIN_THRESHOLD)) {
             mergeSort(arr, fromIndex, toIndex);
-            // TODO : figure out why this is not working
         } else {
-
             int mid = (fromIndex + toIndex) >>> 1;
 
             Thread left = new Thread(() -> parallelMergeSort(arr, fromIndex, mid, availableThreads / 2));
             Thread right = new Thread(() -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads / 2));
 
             List<Thread> taskList = Arrays.asList(left, right);
-            taskList.stream().parallel().forEach(task -> task.start());
+            taskList.parallelStream().forEach(task -> task.start());
+
+            for (Thread task : taskList) {
+                try {
+                    task.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
 
             merge(arr, fromIndex, mid, toIndex);
 
@@ -111,8 +117,15 @@ public class ParallelStreamSort implements Sorter {
     public void sort(int[] arr) {
 
         ForkJoinPool pool = new ForkJoinPool(threads);
-        pool.submit(() -> parallelMergeSort(arr, 0, arr.length - 1, threads));
-        pool.shutdown();
+        Future<?> mainTask = pool.submit(() -> parallelMergeSort(arr, 0, arr.length - 1, threads));
+
+        try {
+            mainTask.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            pool.shutdown();
+        }
 
     }
 
