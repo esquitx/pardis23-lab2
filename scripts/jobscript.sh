@@ -29,7 +29,7 @@ counter=1
 
 while [ $counter -lt 165 ]
 do
-srun java -cp ./bin MeasureMain "$sorter" $counter 1000000 40 80 42 >> $filepath
+srun java -cp ./bin MeasureMain "$sorter" $counter 1024000 40 80 42 >> $filepath
 ((counter*=2))
 done
 echo "Script finished at `date` on `hostname`"
