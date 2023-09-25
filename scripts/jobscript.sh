@@ -20,12 +20,16 @@ javac -d ../bin MeasureMain.java
 cd ..
 
 sorter=$1
-filepath=data/${sorter}.txt
+filepath=data/${sorter}.dat
 
 
 echo "Script initiated at `date` on `hostname`"
-srun -n 1 java -cp ./bin MeasureMain "$sorter" 1 10000000 10 25 42 >> $filepath
-srun -n 1 java -cp ./bin MeasureMain "$sorter" 2 10000000 10 25 42 >> $filepath
-srun -n 1 java -cp ./bin MeasureMain "$sorter" 4 10000000 10 25 42 >> $filepath
-srun -n 1 java -cp ./bin MeasureMain "$sorter" 8 10000000 10 25 42 >> $filepath
+
+counter=1
+
+while [ $counter -lt 165 ]
+do
+srun java -cp ./bin MeasureMain "$sorter" $counter 1000000 40 80 42 >> $filepath
+((counter*=2))
+done
 echo "Script finished at `date` on `hostname`"
