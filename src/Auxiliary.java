@@ -61,7 +61,7 @@ public class Auxiliary {
         int seed = 0;
         for (int i = 0; i < m; i++) {
             // Set new seed to generate array
-            seed += initSeed;
+            // seed += initSeed;
             int[] arr = arrayGenerate(n, seed);
 
             // Time sorting
@@ -91,7 +91,7 @@ public class Auxiliary {
         int seed = 0;
         for (int i = 0; i < m; i++) {
             // Set new seed to generate array
-            seed += initSeed;
+            // sseed += initSeed;
             int[] arr = arrayGenerate(seed, n);
 
             // Copy for reference
