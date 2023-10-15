@@ -24,9 +24,9 @@ echo "Script initiated at `date` on `hostname`"
 
 counter=1
 
-while [ $counter -lt 9]
+while [ $counter -lt 9 ];
 do
-srun java -cp ./bin MeasureMain "$sorter" $counter 1024000 40 80 42 >> $filepath
+java -cp ./bin MeasureMain "$sorter" $counter 1024000 40 80 42 >> $filepath
 ((counter*=2))
 done
 echo "Script finished at `date` on `hostname`"
