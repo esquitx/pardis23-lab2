@@ -7,6 +7,51 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Auxiliary {
+
+    /**
+     * Merge into array using fromIndex-mid-toIndex split
+     */
+    public static void merge(int arr[], int fromIndex, int mid, int toIndex) {
+
+        // Store merge in temporary array
+        int sz = toIndex - fromIndex + 1;
+        int[] temp = new int[sz];
+
+        // Initialize traverse indexes
+        int i = fromIndex;
+        int j = mid + 1;
+        int k = 0;
+
+        while (i <= mid && j <= toIndex) {
+            if (arr[i] < arr[j]) {
+                temp[k] = arr[i];
+                i++;
+            } else {
+                temp[k] = arr[j];
+            }
+            k++;
+        }
+
+        // Remaining entries in first half
+        while (i <= mid) {
+            temp[k] = arr[i];
+            i++;
+            k++;
+        }
+
+        // Remainin in second half
+        while (j <= toIndex) {
+            temp[k] = arr[j];
+            j++;
+            k++;
+        }
+
+        for (j = 0; j < sz; j++) {
+            arr[fromIndex + j] = temp[j];
+        }
+
+    }
+
     /**
      * Generate a pseudo-random array of length `n`.
      */
