@@ -20,28 +20,33 @@ public class ThreadSort implements Sorter {
 
     private void parallelMergeSort(int[] arr, int fromIndex, int toIndex, int availableThreads) {
 
-        int fragmentSize = (toIndex - fromIndex) + 1;
-        if ((availableThreads <= 1) || (fragmentSize <= MIN_THRESHOLD)) {
-            mergeSort(arr, fromIndex, toIndex);
-        } else {
+        int fragmentSize = toIndex - fromIndex;
+        if (fragmentSize > 0) {
+            if ((availableThreads <= 1) || fragmentSize < MIN_THRESHOLD) {
+                mergeSort(arr, fromIndex, toIndex);
+            } else {
 
-            int mid = (fromIndex + toIndex) >>> 1;
+                int mid = (fromIndex + toIndex) >>> 1;
 
-            Thread left = new Thread(() -> parallelMergeSort(arr, fromIndex, mid, availableThreads / 2));
-            Thread right = new Thread(() -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads / 2));
+                Thread left = new Thread(
+                        () -> parallelMergeSort(arr, fromIndex, mid, availableThreads - 1));
+                Thread right = new Thread(
+                        () -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads - 1));
 
-            left.start();
-            right.start();
+                left.start();
+                right.start();
 
-            try {
-                left.join();
-                right.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                try {
+                    left.join();
+                    right.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Auxiliary.merge(arr, fromIndex, mid, toIndex);
             }
-            merge(arr, fromIndex, mid, toIndex);
-
         }
+
     }
 
     @Override

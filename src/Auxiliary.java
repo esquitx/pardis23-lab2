@@ -28,6 +28,7 @@ public class Auxiliary {
                 i++;
             } else {
                 temp[k] = arr[j];
+                j++;
             }
             k++;
         }
@@ -46,8 +47,8 @@ public class Auxiliary {
             k++;
         }
 
-        for (j = 0; j < sz; j++) {
-            arr[fromIndex + j] = temp[j];
+        for (int idx = 0; idx < sz; idx++) {
+            arr[fromIndex + idx] = temp[idx];
         }
 
     }
