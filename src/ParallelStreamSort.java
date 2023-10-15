@@ -62,7 +62,7 @@ public class ParallelStreamSort implements Sorter {
                 }
             }
 
-            merge(arr, fromIndex, mid, toIndex);
+            Auxiliary.merge(arr, fromIndex, mid, toIndex);
 
         }
     }
