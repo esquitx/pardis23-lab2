@@ -22,16 +22,16 @@ public class ThreadSort implements Sorter {
 
         int fragmentSize = toIndex - fromIndex;
         if (fragmentSize > 0) {
-            if ((availableThreads <= 1) || fragmentSize < MIN_THRESHOLD) {
+            if ((availableThreads <= 1) || fragmentSize <= MIN_THRESHOLD) {
                 mergeSort(arr, fromIndex, toIndex);
             } else {
 
                 int mid = (fromIndex + toIndex) >>> 1;
 
                 Thread left = new Thread(
-                        () -> parallelMergeSort(arr, fromIndex, mid, availableThreads - 1));
+                        () -> parallelMergeSort(arr, fromIndex, mid, availableThreads / 2));
                 Thread right = new Thread(
-                        () -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads - 1));
+                        () -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads / 2));
 
                 left.start();
                 right.start();
