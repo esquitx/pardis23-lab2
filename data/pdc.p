@@ -12,7 +12,7 @@ set title "MergeSort sort performance on PDC Dardel"
 
 # Set x and y label
 set xlabel 'threads'
-set ylabel 'speedup'
+set ylabel 'exec time'
 
 # Plot the data
 # using X:Y means plot using column X and column Y
