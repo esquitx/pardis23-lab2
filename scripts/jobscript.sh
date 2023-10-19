@@ -19,7 +19,7 @@ cd ..
 echo "Script initiated at `date` on `hostname`"
 
 # First run sequential
-srun srun java -cp ./bin MeasureMain "Sequential" 1 8192000 50 200 42 >> data/Sequential.dat
+srun java -cp ./bin MeasureMain "Sequential" 1 819200 5 20 42 >> data/Sequential.dat
 
 # Now run all other threads
 sorters=("ThreadSort" "ExecutorService" "ForkJoinPool" "ParallelStream")
@@ -36,7 +36,7 @@ numThreads=(2 4 8 16 32 48 96)
 # measurement loop
 for threadCount in "${numThreads[@]}"
 do
-srun java -cp ./bin MeasureMain "$sorter" $threadCount 8192000 50 200 42 >> $filepath
+srun java -cp ./bin MeasureMain "$sorter" $threadCount 81920 5 20 42 >> $filepath
 done
 ##
 
