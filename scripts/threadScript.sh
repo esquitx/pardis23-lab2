@@ -3,11 +3,11 @@
 # not required if you have set a default allocation
 #SBATCH -A edu23.dd2443
 # The name of the script
-#SBATCH -J measureLab2
+#SBATCH -J measureThreadLab2
 # 10 minutes wall-clock time will be given to this job
 #SBATCH -t 00:00:15
 # The partition
-#SBATCH -p main
+#SBATCH -p shared
 
 
 echo "Compiling ..."
