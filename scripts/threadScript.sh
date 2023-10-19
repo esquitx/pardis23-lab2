@@ -4,8 +4,8 @@
 #SBATCH -A edu23.dd2443
 # The name of the script
 #SBATCH -J measureThreadLab2
-# 10 minutes wall-clock time will be given to this job
-#SBATCH -t 00:00:15
+# 15 minutes wall-clock time will be given to this job
+#SBATCH -t 00:15:00
 # The partition
 #SBATCH -p shared
 
