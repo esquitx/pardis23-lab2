@@ -1,7 +1,8 @@
 # Lab 2 - Java Parallel Programming and Sorting Algorithms
 
 - Group 3
-  de Sotto, Diego and Wei, Jian
+
+de Sotto, Diego and Wei, Jian
 
 ## Task 1: Sequential Sort
 
@@ -19,19 +20,13 @@ For the implementation of Mergesort algorithm, the sorting of the two subsequenc
 
 According to the definition of Amdahl's law, the speedup S = time takes to execute the entire merge sort algorithm sequentially (with one thread)/time to execute the parallelized portion of the merge sort algorithm with x threads. The detailed formulas are shown below.
 
-| Number of Threads |                              Time Complexity                              |       Amdahl's law/Speedup S        |
-| :---------------: | :-----------------------------------------------------------------------: | :---------------------------------: |
-|         1         |                                $nlog _2 n$                                |                  1                  |
-|         2         |                   $\frac{n}{2} \log \_2 \frac{n}{2}+n $                   |  $\frac{2 \log _2 n}{1+\log _2 n}$  |
-|         4         |              $\frac{n}{4} \log _2 \frac{n}{4}+\frac{n}{2}+n$              |  $\frac{4 \log _2 n}{4+\log _2 n}$  |
-|         8         |        $\frac{n}{8} \log _2 \frac{n}{8}+\frac{n}{4}+\frac{n}{2}+n$        | $\frac{8 \log _2 n}{11+\log _2 n}$  |
-|        16         | $\frac{n}{16} \log _2 \frac{n}{16}+\frac{n}{8}+\frac{n}{4}+\frac{n}{2}+n$ | $\frac{16 \log _2 n}{26+\log _2 n}$ |
-
-Here is a plot of our version of Amdahl's law ...
-
-![amdahl's law plot](data/amdahl.png)
-
-We see that ...
+| Number of Threads |                              Time Complexity                               |       Amdahl's law/Speedup S        |
+| :---------------: | :------------------------------------------------------------------------: | :---------------------------------: |
+|         1         |                               $$n \log_2 n$$                               |                  1                  |
+|         2         |                   $$\frac{n}{2} \log_2 \frac{n}{2}+n $$                    |  $$\frac{2 \log_2 n}{1+\log_2 n}$$  |
+|         4         |              $$\frac{n}{4} \log_2 \frac{n}{4}+\frac{n}{2}+n$$              |  $$\frac{4 \log_2 n}{4+\log_2 n}$$  |
+|         8         |        $$\frac{n}{8} \log_2 \frac{n}{8}+\frac{n}{4}+\frac{n}{2}+n$$        | $$\frac{8 \log_2 n}{11+\log_2 n}$$  |
+|        16         | $$\frac{n}{16} \log_2 \frac{n}{16}+\frac{n}{8}+\frac{n}{4}+\frac{n}{2}+n$$ | $$\frac{16 \log_2 n}{26+\log_2 n}$$ |
 
 ## Task 3: ThreadSort
 
@@ -45,7 +40,7 @@ Source files:
 
 ## Task 4: ExecutorServiceSort
 
-Implementation using a FixedThreadPool with number of threads the ones indicated in the input. The structure is very similar to the Task3, but this time tasks are submitted to the pool, instread of started by a spawned threand, and termination is awaited for by the get() method.
+Implementation using a FixedThreadPool with number of threads the ones indicated in the input. The structure is very similar to the Task3, but this time tasks are submitted to the pool, instread of started by a spawned thread and, and termination is awaited for by the get() method.
 
 Source files:
 
@@ -61,10 +56,9 @@ Created a ForkJoinPool with the indicated amount of threads and created a Recurs
 
 ## Task 6: ParalleStreamSort
 
-We were unable to complete a production ready implementation of this task. We did, however, have some ideas on how to implement them.
+The implementation of MergeSort using ParallelStream used as similar programming logic to ThreadSort. Different thread tasks were created for the sorting of the left half and right half of the array, with the intention of being called recursive. These tasks were then wrapped into a Thread array and passed through a Parallel Stream that called their run() methods.
 
-- **Idea 1** - create an array of threads, with the length specified at execution. The array is the separated into fragments, and each thread runs a sequential version of merge sort. A parallelStream is then created to run all these threads in parallel.
-  **Issue** - when all threads have finished sorting,
+Since ParallelStream uses a ForkJoinPool in the background, this is similar to invoking the left and right merging tasks into a pool. Performance is expected to look similar.
 
 Source files:
 
@@ -72,7 +66,7 @@ Source files:
 
 ## Task 7: Performance measurements with PDC
 
-We decided to sort 10,000,000 integers, with 100 validation/warmup rounds and 500 measuring rounds. The initial seed used was 42. To aid with the data collection we wrote the script refered to in the source files, which takes the sorter name as input, takes measurements of 1-8 threads, and finally writes the output to a txt file in the data directory.
+We decided to sort 8,192,000 integers, with 50 validation/warmup rounds and 200 measuring rounds. The initial seed used was 42. To aid with the data collection we wrote the script refered to in the source files, which takes the sorter name as input, takes measurements of 1, 2, 4, 8, 16, 32, 48 and 96 threads, and finally writes the output to a dat file in the data directory.
 
 The decision to choose such a big array followed information found online that suggested arrays in the size of millions were the minimum to percieve the benefits of parallelism. The election of the number of warmup and measuring rounds was taken as a long shot - we were clueless on a good reference value. However, high standard deviation numbers in some initial measurements pushed for a larger number, in order to "smooth" the effect of possible outliers in the execution.
 
@@ -84,7 +78,7 @@ Source files
 
 Usage
 
-- `cd scripts && ./jobscript.sh <sorterName>` where sorter name is the name given in the MeasureMain.java file (ThreadSort, ExecutorService, ForkJoinPool or ParallelStream)
+- `sbatch jobscript.sh` where sorter name is the name given in the MeasureMain.java file (ThreadSort, ExecutorService, ForkJoinPool or ParallelStream)
 
 ![pdc plot](data/pdc.png)
 
@@ -94,10 +88,10 @@ Data came as a surprise, probably because performance improvement was not close 
 
 We see that the only implementation acting in any way close to what can be expected of a parallel program is the one using the fork()/join() framework. The rest offer a small improvement when running from 1 to 2 threads, but any hope of concurrency beneifts disappear as threads are continuously doubled.
 
-An additional note we found interesting was the fact that the standard deviation in the measurements was relatively high (~60%-80%). Although this may mean nothing, it brings to consideration the ghosts of an unconsistently timed program, which takes an unexpected amount of time when executed, independently of input. Attempts were made at fixing these (as mentioned in the section introduction), but success was minimal.
+An additional note we found interesting was the fact that the standard deviation in the measurements was relatively high (~50%-60%). Although this may mean nothing, it brings to consideration the ghosts of an unconsistently timed program, which takes an unexpected amount of time when executed, independently of input. Attempts were made at fixing these (as mentioned in the section introduction), but success was minimal. Discussion with some of out classmates on the number of rounds used (which we thought was the cause of this problem) brought to light that most were using much fewer rounds in their measurements, yet still got more consistent results. Running locally and on DARDEL resulted in similar outputs.
 
-In our opinion, the ForkJoinPoolSort was the easiest to implement. Fork/Join is a framework for parallel computing, mainly to support divide-and-conquer task models. What we need to do beside the sequential sort is to create a ForkJoinPool object to manage tasks, rewrite the original MergeSort method in class MergeSortTask which extends RecursiveAction, and submit new threads to the ForkJoinPool when recursively calling MergeSortTask method.
+In our opinion, the ForkJoinPoolSort was the easiest to implement. Since Fork/Join is structured to support divide-and-conquer task models, merge sort fit perfectly into the type of actions that benefit from using it. The process is simple: create a ForkJoinPool object to manage tasks, rewrite the original MergeSort method in class MergeSortTask which extends RecursiveAction, and submit new threads to the ForkJoinPool when recursively calling MergeSortTask method.
 
-The main reason for using a ForkJoinPool is designed for divide-and-conquer tasks like merge sort. It's well-suited for recursive algorithms where tasks can be subdivided and executed in parallel. And it is easy to implement, with some changes about the MergeSort method but will not change the whole logic. However, it may have some overhead in task management.
+ForkJoinPool is well-suited for recursive algorithms where tasks can be subdivided and executed in parallel. And it is easy to implement, with some changes about the MergeSort method but will not change the whole logic. The main problem that arises is the extra cost in resource management. The pool has to be created and managed, which can introdcue some extra overhead.
 
-What's more, Java has slowly shifted most of its parallel processing packages to use this ForkJoinPool (i.e parallel stream uses ForkJoin pools to manage concurrencies, and ExecutorService is slowly being abandoned in favour of ForkJoin)
+All things said, Java has slowly shifted most of its parallel processing packages to use this ForkJoinPool (i.e parallel stream uses ForkJoin pools to manage concurrencies, and ExecutorService is slowly being abandoned in favour of Fork/Join)
