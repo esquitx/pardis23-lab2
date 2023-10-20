@@ -7,7 +7,7 @@
 # 15 minutes wall-clock time will be given to this job
 #SBATCH -t 00:15:00
 # The partition
-#SBATCH -p shared
+#SBATCH -p main
 
 echo "Compiling ..."
 cd ..
