@@ -72,20 +72,23 @@ public class Auxiliary {
      */
     public static double[] getMeanAndStDev(long[] data) {
 
+        // Get array size
+        int sz = data.length;
+
         // Calculate mean
-        double sum = 0.0;
-        for (double time : data) {
-            sum += time;
+        double mean = 0.0;
+        for (int i = 0; i < sz; i++) {
+            mean += (data[i] / sz);
         }
-        double mean = (sum / data.length);
 
         // Calculate stdev (from variance)
         double variance = 0.0;
-        for (double time : data) {
-            variance += Math.pow(time - mean, 2);
+        for (int i = 0; i < sz; i++) {
+            variance += Math.pow(data[i] - mean, 2);
         }
-        double stdev = Math.sqrt(variance / data.length);
+        double stdev = Math.sqrt(variance / sz);
 
+        // Group in array
         double[] results = { mean, stdev };
         return results;
     }
@@ -104,16 +107,17 @@ public class Auxiliary {
         double[] result = new double[2];
         long[] executionTimes = new long[m];
 
-        int seed = 0;
+        int seed = initSeed;
         for (int i = 0; i < m; i++) {
             // Set new seed to generate array
-            seed += initSeed;
+            seed++;
             int[] arr = arrayGenerate(n, seed);
 
             // Time sorting
             long startTime = System.nanoTime();
             sorter.sort(arr);
             long endTime = System.nanoTime();
+
             executionTimes[i] = (endTime - startTime);
         }
 
@@ -134,10 +138,10 @@ public class Auxiliary {
     public static boolean validate(Sorter sorter, int n, int initSeed, int m) {
 
         // Reference array
-        int seed = 0;
+        int seed = initSeed;
         for (int i = 0; i < m; i++) {
-            // Set new seed to generate array
-            // sseed += initSeed;
+            // Set new seed and generate array
+            seed++;
             int[] arr = arrayGenerate(seed, n);
 
             // Copy for reference
