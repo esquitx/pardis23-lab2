@@ -52,7 +52,7 @@ public class ParallelStreamSort implements Sorter {
             Thread right = new Thread(() -> parallelMergeSort(arr, mid + 1, toIndex, availableThreads / 2));
 
             List<Thread> taskList = Arrays.asList(left, right);
-            taskList.parallelStream().forEach(task -> task.start());
+            taskList.parallelStream().forEach(task -> task.run());
 
             for (Thread task : taskList) {
                 try {
